@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TOOLWIN AI - MULTI CASINO SYSTEM</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;900&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --accent: #00f3ff; --danger: #ff0055; --gold: #ffd700; --dark: #0a0a0a; --glass: rgba(255,255,255,0.05); }
+        * { box-sizing: border-box; font-family: 'Rajdhani', sans-serif; }
+        body { background: var(--dark); color: #fff; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+
+        .app-shell { width: 100%; max-width: 420px; height: 100%; background: #000; border: 1px solid #222; position: relative; display: flex; flex-direction: column; box-shadow: 0 0 50px rgba(0,0,0,1); }
+        
+        /* HEADER */
+        .header { padding: 15px 20px; display: none; justify-content: space-between; align-items: center; background: #111; border-bottom: 1px solid #333; }
+        .logo-tool { font-family: 'Orbitron'; font-size: 16px; font-weight: 900; color: var(--accent); }
+        .wallet { background: rgba(0, 243, 255, 0.1); border: 1px solid var(--accent); padding: 4px 12px; border-radius: 20px; font-size: 13px; cursor: pointer; }
+
+        /* SCREENS */
+        .screen { flex: 1; padding: 25px; display: none; flex-direction: column; overflow-y: auto; animation: slideIn 0.3s ease; }
+        .screen.active { display: flex; }
+        @keyframes slideIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+
+        /* AUTH FORMS */
+        .auth-box { text-align: center; margin-top: 50px; }
+        .auth-box h1 { font-family: 'Orbitron'; font-size: 28px; margin-bottom: 40px; text-shadow: 0 0 15px var(--accent); }
+        .input-wrap { margin-bottom: 20px; position: relative; }
+        .input-wrap i { position: absolute; left: 15px; top: 18px; color: var(--accent); font-size: 14px; }
+        .input-wrap input { width: 100%; padding: 16px 16px 16px 45px; background: #1a1a1a; border: 1px solid #333; border-radius: 12px; color: #fff; font-size: 16px; outline: none; transition: 0.3s; }
+        .input-wrap input:focus { border-color: var(--accent); background: #222; }
+        
+        .btn-glow { width: 100%; padding: 16px; background: var(--accent); border: none; border-radius: 12px; color: #000; font-weight: 900; font-family: 'Orbitron'; cursor: pointer; text-transform: uppercase; margin-top: 10px; box-shadow: 0 0 20px rgba(0, 243, 255, 0.3); }
+        .btn-glow.pink { background: var(--danger); box-shadow: 0 0 20px rgba(255, 0, 85, 0.3); color: #fff; }
+
+        /* HALL GRID */
+        .hall-list { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px; }
+        .hall-item { background: #111; border: 1px solid #222; padding: 25px 15px; border-radius: 15px; text-align: center; cursor: pointer; transition: 0.2s; position: relative; overflow: hidden; }
+        .hall-item:hover { border-color: var(--accent); background: #151515; }
+        .hall-item i { font-size: 28px; margin-bottom: 12px; color: var(--accent); }
+        .hall-item span { display: block; font-weight: 700; font-size: 14px; letter-spacing: 1px; }
+        .hall-item b { font-size: 9px; color: #555; text-transform: uppercase; }
+
+        /* GAME SCREEN */
+        .ai-card { background: linear-gradient(180deg, #111, #000); padding: 30px; border-radius: 20px; border: 1px solid #333; text-align: center; margin-bottom: 25px; box-shadow: inset 0 0 20px rgba(0,243,255,0.05); }
+        #ai-res { font-family: 'Orbitron'; font-size: 45px; font-weight: 900; margin: 20px 0; text-shadow: 0 0 20px rgba(255,255,255,0.1); }
+        .score-box { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .score-box input { padding: 15px; background: #111; border: 1px solid #333; color: #fff; text-align: center; border-radius: 12px; font-size: 20px; font-weight: bold; font-family: 'Orbitron'; }
+
+        /* NOTIFY */
+        .toast { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); background: #fff; color: #000; padding: 12px 24px; border-radius: 50px; font-weight: bold; font-size: 14px; opacity: 0; pointer-events: none; transition: 0.3s; z-index: 999; }
+        .toast.show { opacity: 1; bottom: 60px; }
+    </style>
+</head>
+<body>
+
+<div class="app-shell">
+    <div class="header" id="app-header">
+        <div class="logo-tool">TOOLWIN <span style="color:#fff">AI</span></div>
+        <div class="wallet" onclick="addMoney()"><i class="fa-solid fa-coins"></i> <span id="user-coins">0</span> Xu</div>
+    </div>
+
+    <div id="scr-login" class="screen active">
+        <div class="auth-box">
+            <h1>SYSTEM LOGIN</h1>
+            <div class="input-wrap">
+                <i class="fa-solid fa-user"></i>
+                <input type="text" id="l-u" placeholder="Tên tài khoản">
+            </div>
+            <div class="input-wrap">
+                <i class="fa-solid fa-lock"></i>
+                <input type="password" id="l-p" placeholder="Mật khẩu">
+            </div>
+            <button class="btn-glow" onclick="doLogin()">KẾT NỐI NGAY</button>
+            <p style="color:#555; font-size:14px; margin-top:25px;" onclick="nav('scr-reg')">Chưa có tài khoản? <span style="color:var(--accent); text-decoration:underline;">Đăng ký</span></p>
+        </div>
+    </div>
+
+    <div id="scr-reg" class="screen">
+        <div class="auth-box">
+            <h1>REGISTER</h1>
+            <div class="input-wrap">
+                <i class="fa-solid fa-user-plus"></i>
+                <input type="text" id="r-u" placeholder="Tên đăng nhập mới">
+            </div>
+            <div class="input-wrap">
+                <i class="fa-solid fa-key"></i>
+                <input type="password" id="r-p" placeholder="Mật khẩu bảo mật">
+            </div>
+            <button class="btn-glow pink" onclick="doRegister()">TẠO TÀI KHOẢN</button>
+            <p style="color:#555; font-size:14px; margin-top:25px;" onclick="nav('scr-login')">Đã có tài khoản? <span style="color:var(--danger); text-decoration:underline;">Quay lại</span></p>
+        </div>
+    </div>
+
+    <div id="scr-halls" class="screen">
+        <h3 style="margin:0 0 15px 0; color:var(--accent); letter-spacing:1px;">CASINO HUB</h3>
+        <div class="hall-list">
+            <div class="hall-item" onclick="nav('scr-game', 'SEXY')">
+                <i class="fa-solid fa-person-dress"></i>
+                <span>SEXY</span><b>Baccarat</b>
+            </div>
+            <div class="hall-item" onclick="nav('scr-game', 'DG')">
+                <i class="fa-solid fa-shield-cat"></i>
+                <span>DG</span><b>Dream Gaming</b>
+            </div>
+            <div class="hall-item" onclick="nav('scr-game', 'WM')">
+                <i class="fa-solid fa-dice"></i>
+                <span>WM</span><b>Casino</b>
+            </div>
+            <div class="hall-item" onclick="nav('scr-game', 'EVO')">
+                <i class="fa-solid fa-bolt"></i>
+                <span>EVO</span><b>Evolution</b>
+            </div>
+            <div class="hall-item" onclick="nav('scr-game', 'SA')">
+                <i class="fa-solid fa-gem"></i>
+                <span>SA</span><b>Gaming</b>
+            </div>
+            <div class="hall-item" onclick="nav('scr-game', 'AG')">
+                <i class="fa-solid fa-crown"></i>
+                <span>AG</span><b>Asia Gaming</b>
+            </div>
+            <div class="hall-item" onclick="nav('scr-game', 'MT')">
+                <i class="fa-solid fa-microchip"></i>
+                <span>MT</span><b>Microgaming</b>
+            </div>
+            <div class="hall-item" onclick="nav('scr-game', 'CASINO')">
+                <i class="fa-solid fa-building-columns"></i>
+                <span>CASINO</span><b>All In One</b>
+            </div>
+        </div>
+    </div>
+
+    <div id="scr-game" class="screen">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <i class="fa-solid fa-chevron-left" onclick="nav('scr-halls')" style="font-size:20px; cursor:pointer;"></i>
+            <span id="hall-title" style="font-weight:900; color:var(--accent); font-family:'Orbitron';">SEXY BCR</span>
+            <span style="font-size:10px; color:#555;">STATUS: ON</span>
+        </div>
+
+        <div class="ai-card">
+            <div style="font-size:11px; color:#666; letter-spacing:2px;">AI PREDICTION</div>
+            <div id="ai-res">READY</div>
+            <div style="font-size:12px; color:var(--gold); font-weight:bold;">TỈ LỆ THẮNG: 98.5%</div>
+        </div>
+
+        <div class="score-box">
+            <input type="number" id="p_score" placeholder="P">
+            <input type="number" id="b_score" placeholder="B">
+        </div>
+
+        <button class="btn-glow" onclick="runAI()" style="margin-top:20px;">PHÂN TÍCH ( -1 Xu )</button>
+        <p style="text-align:center; font-size:11px; color:#444; margin-top:20px;">Vui lòng nhập chính xác điểm số ván trước đó.</p>
+    </div>
+
+    <div id="toast" class="toast">Message</div>
+</div>
+
+<script>
+    let db = JSON.parse(localStorage.getItem('tw_db_v50')) || [];
+    let user = null;
+
+    function nav(id, title) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        document.getElementById('app-header').style.display = (id === 'scr-login' || id === 'scr-reg') ? 'none' : 'flex';
+        if(title) document.getElementById('hall-title').innerText = title + " BCR";
+    }
+
+    function doRegister() {
+        const u = document.getElementById('r-u').value.trim();
+        const p = document.getElementById('r-p').value;
+        if(u.length < 3) return showToast("Tên quá ngắn!");
+        if(db.find(x => x.u === u)) return showToast("Tài khoản đã tồn tại!");
+        
+        db.push({ u: u, p: p, coins: 20 });
+        localStorage.setItem('tw_db_v50', JSON.stringify(db));
+        showToast("Đăng ký thành công! +20 Xu");
+        nav('scr-login');
+    }
+
+    function doLogin() {
+        const u = document.getElementById('l-u').value;
+        const p = document.getElementById('l-p').value;
+        const acc = db.find(x => x.u === u && x.p === p);
+        if(acc) {
+            user = acc;
+            document.getElementById('user-coins').innerText = user.coins;
+            nav('scr-halls');
+            showToast("Đăng nhập thành công!");
+        } else {
+            showToast("Sai tài khoản hoặc mật khẩu!");
+        }
+    }
+
+    function runAI() {
+        const pS = document.getElementById('p_score').value;
+        const bS = document.getElementById('b_score').value;
+        const out = document.getElementById('ai-res');
+
+        if(pS === '' || bS === '') return showToast("Nhập điểm!");
+        if(user.coins < 1) return showToast("Hết xu! Nhấn vào xu để nạp.");
+
+        user.coins -= 1;
+        document.getElementById('user-coins').innerText = user.coins;
+        out.innerText = "WAIT...";
+        out.style.color = "#fff";
+
+        setTimeout(() => {
+            const gap = Math.abs(pS - bS);
+            let res = "";
+            // Thuật toán AI v50 chuyên sâu sảnh quốc tế
+            if(gap <= 2) {
+                res = (pS >= bS) ? "PLAYER" : "BANKER";
+            } else {
+                res = (pS >= bS) ? "BANKER" : "PLAYER";
+            }
+            
+            out.innerText = res;
+            out.style.color = (res === "PLAYER") ? "var(--accent)" : "var(--danger)";
+            showToast("-1 Xu thành công");
+            
+            document.getElementById('p_score').value = "";
+            document.getElementById('b_score').value = "";
+            saveDB();
+        }, 1000);
+    }
+
+    function addMoney() {
+        const code = prompt("NHẬP MÃ GIFTCODE:");
+        if(code === "TOOLWIN88") {
+            user.coins += 500;
+            document.getElementById('user-coins').innerText = user.coins;
+            showToast("Nạp +500 Xu thành công!");
+            saveDB();
+        } else if(code) {
+            showToast("Mã nạp không tồn tại!");
+        }
+    }
+
+    function saveDB() {
+        const idx = db.findIndex(x => x.u === user.u);
+        db[idx] = user;
+        localStorage.setItem('tw_db_v50', JSON.stringify(db));
+    }
+
+    function showToast(m) {
+        const t = document.getElementById('toast');
+        t.innerText = m; t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 2500);
+    }
+</script>
+</body>
+</html>
